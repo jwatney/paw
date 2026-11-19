@@ -10,6 +10,9 @@ $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Rules = Join-Path $Root 'rules/progressive-agentic-coding.md'
 $Skills = Join-Path $Root 'skills'
 $Allowed = @('all', 'cursor', 'claude', 'codex', 'opencode')
+$Replace = [bool]$Force
+$Asked = $false
+$Prompted = $false
 $Selected = @()
 foreach ($value in $Agents) {
     foreach ($agent in ($value -split ',')) {
@@ -24,6 +27,16 @@ if ($Selected.Count -eq 0) { $Selected = @('cursor', 'claude', 'codex', 'opencod
 
 $Start = '# BEGIN PROGRESSIVE AGENTIC CODING (managed)'
 $End = '# END PROGRESSIVE AGENTIC CODING (managed)'
+function Confirm-Overwrite {
+    if ($Replace -or $Asked -or $WhatIf) { return }
+    $script:Asked = $true
+    $interactive = $false
+    try { $interactive = -not [Console]::IsInputRedirected } catch { $interactive = $false }
+    if (-not $interactive) { return }
+    $script:Prompted = $true
+    $reply = Read-Host 'Overwrite existing installed files? [y/N]'
+    if ($reply -match '^(?i:y|yes)$') { $script:Replace = $true }
+}
 function Backup-Item([string]$Path) {
     if (Test-Path -LiteralPath $Path) {
         $tag = (Get-Date -Format 'yyyyMMddHHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 6)
@@ -37,7 +50,15 @@ function Install-Skills([string]$Dir) {
         $source = Join-Path $Skills $name
         $destination = Join-Path $Dir $name
         if (Test-Path -LiteralPath $destination) {
-            if (-not $Force) { Write-Host "[skip] $destination (already exists; pass -Force to replace)"; continue }
+            Confirm-Overwrite
+            if (-not $Replace) {
+                if ($Prompted) {
+                    Write-Host "[skip] $destination (left unchanged)"
+                } else {
+                    Write-Host "[skip] $destination (already exists; pass -Force to replace)"
+                }
+                continue
+            }
             Backup-Item $destination
             if (-not $WhatIf) { Remove-Item -LiteralPath $destination -Recurse -Force }
         }

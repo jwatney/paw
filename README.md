@@ -42,7 +42,7 @@ Run `bash scripts/install.sh --agents all --dry-run`, then `bash scripts/install
 | Codex | `~/.codex/AGENTS.md` | `~/.agents/skills/` |
 | OpenCode | `~/.config/opencode/AGENTS.md` | `~/.agents/skills/` |
 
-The installers add a **marked section** to preexisting rules files rather than replacing the entire file. Existing skill directories are skipped unless `-Force` / `--force` is explicitly passed; overwritten skill directories are backed up. The installers do not make changes to application repositories, push code or contact any cloud service. They do not automatically configure Cursor's User Rules or Cloud Agent sync.
+The installers add a **marked section** to preexisting rules files rather than replacing the entire file. Existing skill directories are left in place unless you answer yes to the overwrite prompt, or pass `-Force` / `--force` to replace them without asking. Overwritten skill directories are backed up. Non-interactive runs skip existing directories unless force is passed. The installers do not make changes to application repositories, push code or contact any cloud service. They do not automatically configure Cursor's User Rules or Cloud Agent sync.
 
 ### Cross-tool duplicate discovery
 

@@ -11,6 +11,8 @@ END='# END PROGRESSIVE AGENTIC CODING (managed)'
 AGENT_ARGS=()
 FORCE=0
 WHAT_IF=0
+REPLACE=0
+ASKED=0
 SELECTED=()
 
 while [[ $# -gt 0 ]]; do
@@ -27,6 +29,9 @@ while [[ $# -gt 0 ]]; do
 done
 if [[ ${#AGENT_ARGS[@]} -eq 0 ]]; then
   AGENT_ARGS=(all)
+fi
+if (( FORCE )); then
+  REPLACE=1
 fi
 
 normalize() {
@@ -90,6 +95,22 @@ trim_end_into() {
   printf -v "$dest" '%s' "$value"
 }
 
+confirm_overwrite() {
+  local reply
+  if (( REPLACE || ASKED || WHAT_IF )); then
+    return 0
+  fi
+  ASKED=1
+  if [[ ! -t 0 ]]; then
+    return 0
+  fi
+  printf 'Overwrite existing installed files? [y/N] ' >&2
+  IFS= read -r reply || true
+  case "$(normalize "$reply")" in
+    y|yes) REPLACE=1 ;;
+  esac
+}
+
 backup() {
   local path="$1" hex destination
   [[ -e "$path" ]] || return 0
@@ -108,8 +129,13 @@ install_skills() {
     source="$SKILLS/$name"
     dest="$dir/$name"
     if [[ -e "$dest" ]]; then
-      if (( ! FORCE )); then
-        printf '[skip] %s (already exists; pass --force to replace)\n' "$dest"
+      confirm_overwrite
+      if (( ! REPLACE )); then
+        if (( ASKED )) && [[ -t 0 ]]; then
+          printf '[skip] %s (left unchanged)\n' "$dest"
+        else
+          printf '[skip] %s (already exists; pass --force to replace)\n' "$dest"
+        fi
         continue
       fi
       backup "$dest"
