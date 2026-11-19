@@ -1,0 +1,3 @@
+interface:
+  display_name: "Progressive Review"
+  short_description: "Understand code incrementally at a fixed commit."

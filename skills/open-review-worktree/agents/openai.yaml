@@ -1,0 +1,3 @@
+interface:
+  display_name: "Open Review Worktree"
+  short_description: "Check out a pinned checkpoint for read-only review."

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Review Loop"
+  short_description: "Walk a checkpoint in chat, one decision at a time."
